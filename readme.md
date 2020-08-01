@@ -1,55 +1,73 @@
-This is a sample student repository for the Wolfram Summer School, you should clone or fork this repository to get started.
+# Introduction
 
-## GETTING STARTED
+The word cloud is a popular means of visualization of text data showing object sized according to there weights. However, if the text data is changing over time, for example the news paper article of each edition, then the position of the words in the word cloud can change drastically from time to time. This happens especially if the size of the words have changed over the time. See the picture below for an example.
 
-### Create a GitHub account
-https://github.com/join
 
-### Create a repo to submit your work
-fork this repo, clone local copy, and push your updates to GitHub.com (see below for more details)
+Stable word position in the word cloud can help the viewer to keep track of the word and visually guide to see how it has changed over the time. Stabilizing the position of the words in word cloud for the dynamical data is a challenging issue. This project aims to solve this problem.
 
-### Give your instructor write permissions
-you need to give write permission to that repo to your tutor and to @WolframSummerSchoolProjects. Additionally please give write permissions to @kylekeane and @swedewhite for organizational purposes (you can revoke these at the end of school).
+A general algorithm for static word cloud is to fill the space from larger to smaller size, starting from the center and spiraling outward until there is no more overlapping.
 
-## CONTENT
+I tested the following modification to the algorithm to the dynamical system: The time is obviously discretized. For simplicity, we consider only two consecutive time frame and we want to minimize the displacement of the word between consecutive time lapse. In the long run the word can move, but the movement would look continuous making reading natural.
 
-### "Final Project" folder
-the place to submit your entire final project, including draft work if you want. There are templates and instructions in the subdirectories described in the readme.md of the "Final Project" folder.
+Here is the algorithm in plain English:
 
-### "Homework" folder
-the place to submit your homework assignment (computational essay). There are templates and instructions in the subdirectories described in the readme.md of the "Homework" folder.
+A. Take the initial word data (object and weights).
 
-### "Contributions" folder
-the place to store extra work products such as draft submissions to the data repo, function repo, neural net repo, and notebook archive. Follow the conventions described in the readme.md of that directory. There are instructions in the readme.md of the "Contributions" folder.
+- Put the largest word at the center of the graph.
+- Start with the next larger word from center to spiral outward until there is no overlap with previously placed word.
+- Repeat for smaller words each time starting from the center.
 
-### "Wolfram Community Post" folder
-the place to save versions of your community post so you can collaborate with your mentor if needed. There are instructions in the readme.md of the "Wolfram Community Post" folder.
+B. Take the word data of next time step and take each word in size order
 
-## MORE INFO ABOUT USING GITHUB
+- If current word was present in the previous word cloud, start spiraling from its previous position until there is no overlap with already placed words. If it was not present start from the center of the graph.
+- Take the next word, and repeat
 
-### Download and install a Git UI
-*On OSX / Wndows*:  
-Download and install github desktop:  
-https://desktop.github.com  
+C. Repeat at each time step on the new set of word data.
 
-*On Ubuntu*:  
-Download and install git kraken:  
-https://www.gitkraken.com  
-Login and authenticate with GitHub  
-https://support.gitkraken.com/integrations/github
+For the other approach to address the dynamical word cloud follow this link and the references therein.
 
-### Install command line utility (optional)
-https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+# Generating the words
 
-### Clone the repo locally
-by clicking on the button CLONE OR DOWNLOAD and then to OPEN IN DESKTOP
+Rectangles of various sizes are used for the placeholder for the words in this project. We use labels on the rectangle to track them over the time. We define a container that gives a rectangle with specified label.
 
-### Edit your files locally
-work on your computer and push to the cloud when you are ready to save your work
 
-### Write/edit readme files using MarkDown
-a nice cheatsheet can be found here: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet
-the readme should contain:
-1. what your project is about
-2. how to run your code
-3. examples, code documentation, etc
+# Static word cloud
+
+
+
+# Dynamic word cloud
+
+## Current word in previous position
+
+We start by calculating the starting position for the words in the current word data. In more general case it can be the average position of the center of the words in the previous word clouds. But here, I am working with two time steps. So, words are simply assigned at their previous centroid scaled by a factor which is the ratio of the total area occupied by the words in the previous word cloud to that of the present word cloud.
+
+Here we define a function to assign each words in the new word list to to their previous position back in time. This function is limited to work with one static and next dynamic word cloud. But this handles the case of words appearing and disappearing from the previous word data.
+
+
+## Off centered spirals
+
+We define a function to calculate the spiral grid centered around the center of the word. The spirals are restricted so that it does not go beyond a projected area which is proportional to the sum of area of all the words in the word cloud. This partly helps to avoid from flying the word off from the center in the dynamical word cloud generation.
+
+## Remove the overlap
+
+
+
+## Dynamical word cloud generation
+Finally, we find the non overlapped position for each word in the list and create a graphics out of it.
+
+
+
+
+The positive points of this algorithm is that the biggest word will be placed first. So they relatively move lesser. But even for the smaller word they might find the smaller gap left by the bigger words so they also tend to move less.
+
+# Future direction
+
+- Detail tuning of the hyper-parameter for the better performance is to be done.
+
+- It only consider evolution of the word cloud from previous static word cloud. The continuous evolution over the time is straight forward generalization.
+
+- This algorithm might run into the problem of having words not packing compactly. A simple way to solve this problem is to finally pulling the words towards the center until it overlaps. Alternatively, this could be solved by assigning the weight such that the word will get penalized placing it away from the center of the graph. (not to confuse with the center of the spiral they are moving)
+
+- Allowing vertical positioning of the word might help in the compactness. This can be achieved by rotating the word by 90 degree at each grid point before moving to the next grid point.
+
+- Restricting the off centered spiral grid on the square gave more relative area for words to fit in. Restricting them in a circle of same relative area as the previous word cloud can improve the compactness of the word cloud.
